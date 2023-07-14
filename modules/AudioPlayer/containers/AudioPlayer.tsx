@@ -15,6 +15,8 @@ export const AudioPlayer = ({
 }: AudioPlayerProps) => {
   const [error, setError] = useState<string>();
   const [tracklist, setTracklist] = useState<Track[]>();
+  const [hasLicense, setHasLicense] = useState(false);
+  const [licensePaid, setLicensePaid] = useState(false);
 
   /* FETCH TX & TRANSFORM DATA */
 
@@ -46,5 +48,11 @@ export const AudioPlayer = ({
     return null;
   }
 
-  return <Component tracklist={tracklist} />;
+  return (
+    <Component
+      tracklist={tracklist}
+      hasLicense={hasLicense}
+      licensePaid={licensePaid}
+    />
+  );
 };
