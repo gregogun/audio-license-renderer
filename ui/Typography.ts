@@ -89,6 +89,12 @@ export const Typography = styled("p", {
         fontWeight: "$9",
       },
     },
+    contrast: {
+      low: {},
+      high: {
+        color: "$whiteA12",
+      },
+    },
     ellipsis: {
       single: {
         textOverflow: "ellipsis",

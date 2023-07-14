@@ -215,3 +215,9 @@ export const { styled, css, theme, globalCss, keyframes, getCssText, config } =
   });
 
 export type CSS = Stitches.CSS<typeof config>;
+export type {
+  ComponentProps,
+  VariantProps,
+  PropertyValue,
+  ScaleValue,
+} from "@stitches/react";
