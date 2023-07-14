@@ -7,9 +7,6 @@
     "prebuild": "pnpm clean-build && node scripts/add-asset-prefix.mjs",
     "postbuild": "node scripts/remove-asset-prefix.mjs && prettier --write './next.config.js'",
     "build": "pnpm prebuild && next build && next export && pnpm postbuild",
-    "upload": "pnpm build && pnpm bundlr",
-    "upload-nc": "pnpm build && pnpm bundlr --no-confirmation",
-    "bundlr": "bundlr upload-dir out -c arweave -h https://node2.bundlr.network -w ./wallet.json --index-file index.html",
     "start": "next start",
     "lint": "next lint",
     "format": "prettier --write '**/*.{json,md,mjs,js,ts,jsx,tsx,yml,css}'",
@@ -18,15 +15,17 @@
   },
   "dependencies": {
     "@next/font": "13.1.6",
-    "arconnect": "0.4.2",
-    "arweave": "1.12.4",
-    "arweave-account": "1.3.4",
+    "@radix-ui/react-slider": "1.1.1",
+    "@stitches/react": "1.2.8",
+    "arweave": "1.13.7",
     "arweave-graphql": "0.0.5",
     "arweave-wallet-connector": "0.0.31",
     "next": "13.1.6",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "warp-contracts": "1.2.52"
+    "react-icons": "4.7.1",
+    "vouchdao": "0.2.6",
+    "warp-contracts": "1.4.8"
   },
   "devDependencies": {
     "@types/node": "18.11.18",
