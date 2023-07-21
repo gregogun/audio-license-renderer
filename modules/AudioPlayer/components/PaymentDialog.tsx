@@ -8,36 +8,51 @@ import {
   DialogTitle,
 } from "@/ui/Dialog";
 import { RxCheck, RxCross2 } from "react-icons/rx";
-import { usePayments } from "../hooks/usePayments";
 import { SetStateAction, useState } from "react";
+import { Image } from "@/ui/Image";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import { licensePaid, makePayment } from "@/lib/payments";
+import { getLicenseInfo } from "@/lib/api";
+import { useConnect } from "arweave-wallet-ui-test";
 
 interface PaymentDialogProps {
   open: boolean;
   onClose: () => void;
-  setLicensePaid: React.Dispatch<SetStateAction<boolean>>;
+  licensePaid: boolean;
+  fee: number | undefined;
+  txid: string;
 }
 
 export const PaymentDialog = ({
   open,
   onClose,
-  setLicensePaid,
+  licensePaid,
+  fee,
+  txid,
 }: PaymentDialogProps) => {
-  const [paymentStatus, setPaymentStatus] = useState<
-    "unpaid" | "in progress" | "paid"
-  >("unpaid");
+  const queryClient = useQueryClient();
+  const { walletAddress } = useConnect();
+  const [submittingPayment, setSubmittingPayment] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
 
-  const handleClick = () => {
-    setPaymentStatus("in progress");
-
-    setTimeout(() => {
-      setPaymentStatus("paid");
-    }, 2000);
-
-    setTimeout(() => {
-      setLicensePaid(true);
-      onClose();
-    }, 3000);
-  };
+  const paymentMutation = useMutation({
+    mutationFn: () => makePayment(txid, walletAddress),
+    onSuccess: (data) => {
+      setSubmittingPayment(false);
+      setPaymentSuccess(true);
+      console.log(data);
+      setTimeout(() => {
+        queryClient.invalidateQueries({
+          queryKey: [`license-info-${txid}`, `license-paid-${txid}`],
+        });
+      }, 500);
+    },
+    onError: (error: any) => {
+      document.body.style.pointerEvents = "none";
+      setSubmittingPayment(false);
+      console.error(error);
+    },
+  });
 
   const parentRef = document.getElementById("audio-container");
   return (
@@ -50,6 +65,7 @@ export const PaymentDialog = ({
         />
         <DialogContent
           css={{
+            backgroundColor: "transparent",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
@@ -57,6 +73,13 @@ export const PaymentDialog = ({
             gap: "$5",
           }}
         >
+          {/* <Image
+            css={{
+              width: 80,
+              height: 33.45,
+            }}
+            src="udl_license.svg"
+          /> */}
           <DialogTitle asChild>
             <Typography
               css={{ maxWidth: "14ch", textAlign: "center" }}
@@ -64,7 +87,7 @@ export const PaymentDialog = ({
               size="7"
               weight="6"
             >
-              Pay one-time fee of 1 $U to listen to the full track
+              Pay one-time fee of {fee} $U to listen to the full track
             </Typography>
           </DialogTitle>
           <Button
@@ -73,13 +96,21 @@ export const PaymentDialog = ({
                 color: "hsl(151, 55.0%, 41.5%)",
               },
             }}
-            disabled={paymentStatus !== "unpaid"}
-            onClick={handleClick}
+            onClick={() => {
+              // fixes window focusing issue between arweave.app iframe and tanstack query
+              document.body.style.pointerEvents = "auto";
+              setSubmittingPayment(true);
+              paymentMutation.mutate();
+            }}
+            disabled={submittingPayment}
           >
-            {paymentStatus === "unpaid" && "Pay 1 $U"}
-            {paymentStatus === "in progress" && "Payment in progress..."}
-            {paymentStatus === "paid" && "Payment successful"}
-            {paymentStatus === "paid" && <RxCheck />}
+            {!licensePaid &&
+              !paymentSuccess &&
+              !submittingPayment &&
+              `Pay ${fee} $U`}
+            {submittingPayment && "Processing payment..."}
+            {paymentSuccess && !submittingPayment && "Payment successful"}
+            {paymentSuccess && !submittingPayment && <RxCheck />}
           </Button>
           <DialogClose asChild>
             <IconButton

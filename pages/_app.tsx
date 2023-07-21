@@ -1,5 +1,7 @@
 import { globalCss } from "@/stitches.config";
 import type { AppProps } from "next/app";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ConnectProvider } from "arweave-wallet-ui-test";
 
 const globalStyles = globalCss({
   "*, *::before, *::after": {
@@ -28,6 +30,14 @@ const globalStyles = globalCss({
 
 globalStyles();
 
+const queryClient = new QueryClient();
+
 export default function App({ Component, pageProps }: AppProps) {
-  return <Component {...pageProps} />;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ConnectProvider>
+        <Component {...pageProps} />
+      </ConnectProvider>
+    </QueryClientProvider>
+  );
 }

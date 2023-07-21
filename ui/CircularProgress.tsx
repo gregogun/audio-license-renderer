@@ -29,7 +29,7 @@ const ProgressArc = styled("path", {
   fill: "none",
   stroke: "$whiteA12",
   strokeWidth: "6px",
-  strokeLinecap: "round",
+  // strokeLinecap: "round",
   transformOrigin: "center",
   transition: "stroke-dasharray 0.3s",
 });

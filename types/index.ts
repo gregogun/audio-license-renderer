@@ -3,6 +3,7 @@ export type Track = {
   creator: string;
   src: string;
   artworkSrc: string | undefined;
+  txid: string;
 };
 
 export type Tracklist = Track[];

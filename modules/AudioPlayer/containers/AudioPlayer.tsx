@@ -1,8 +1,10 @@
 import { Track } from "@/types";
-import { Typography } from "@/ui";
+import { Flex, Typography } from "@/ui";
 import { useEffect, useState } from "react";
 import { AudioPlayer as Component } from "../components/AudioPlayer";
 import { getSong } from "@/lib/api";
+import { licensePaid } from "@/lib/payments";
+import { ConnectWallet } from "arweave-wallet-ui-test";
 
 interface AudioPlayerProps {
   txid: string | undefined;
@@ -15,7 +17,6 @@ export const AudioPlayer = ({
 }: AudioPlayerProps) => {
   const [error, setError] = useState<string>();
   const [tracklist, setTracklist] = useState<Track[]>();
-  const [hasLicense, setHasLicense] = useState(true);
 
   /* FETCH TX & TRANSFORM DATA */
 
@@ -28,7 +29,6 @@ export const AudioPlayer = ({
 
     try {
       const data = await getSong(gateway, txid);
-      // console.log("fetched data", data);
 
       setTracklist(data);
     } catch (error) {
@@ -48,10 +48,28 @@ export const AudioPlayer = ({
   }
 
   return (
-    <Component
-      tracklist={tracklist}
-      hasLicense={hasLicense}
-      // licensePaid={licensePaid}
-    />
+    <>
+      {/* <Flex
+        css={{
+          position: "absolute",
+          top: 40,
+        }}
+        direction="column"
+        align="center"
+        gap="10"
+      >
+        <ConnectWallet
+          appName="AR-1"
+          permissions={[
+            "ACCESS_ADDRESS",
+            "ACCESS_ALL_ADDRESSES",
+            "ACCESS_ARWEAVE_CONFIG",
+            "SIGN_TRANSACTION",
+            "DISPATCH",
+          ]}
+        />
+      </Flex> */}
+      <Component tracklist={tracklist} />
+    </>
   );
 };
