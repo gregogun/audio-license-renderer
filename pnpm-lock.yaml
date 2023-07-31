@@ -2,7 +2,7 @@ lockfileVersion: 5.4
 
 specifiers:
   '@next/font': 13.1.6
-  '@permaweb/payments': 0.0.6
+  '@permaweb/payments': 0.0.7
   '@radix-ui/react-dialog': 1.0.4
   '@radix-ui/react-slider': 1.1.1
   '@stitches/react': 1.2.8
@@ -30,7 +30,7 @@ specifiers:
 
 dependencies:
   '@next/font': 13.1.6
-  '@permaweb/payments': 0.0.6
+  '@permaweb/payments': 0.0.7
   '@radix-ui/react-dialog': 1.0.4_fxtgt6bjwd6p4cwoordejim2zi
   '@radix-ui/react-slider': 1.1.1_biqbaboplfbrettd7655fr4n2y
   '@stitches/react': 1.2.8_react@18.2.0
@@ -856,8 +856,8 @@ packages:
       rimraf: 3.0.2
     optional: true
 
-  /@permaweb/payments/0.0.6:
-    resolution: {integrity: sha512-Qr76EmiF9s5FG+cJzMwv1YgpubG3CfVdd5Vf5/Fp9yDVpub0YnHIuboea4wAbCcRWwNluSsC97+CD35Drc3IdQ==}
+  /@permaweb/payments/0.0.7:
+    resolution: {integrity: sha512-ktkk3YR3QKAqh5e8VPM4Zo2DKWvQT0J/8jz6ycCvrIay0LBYdCWSTVU2xuRUN0M2XHfz1QFEDFdBmOCx/zfUfA==}
     dependencies:
       ar-gql: 1.2.2
       hyper-async: 1.1.2

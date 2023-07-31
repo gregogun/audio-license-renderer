@@ -1,5 +1,5 @@
 import { Manifest } from "../types";
-import { accountFromAddress, boringAvatars } from "../utils";
+import { boringAvatars } from "../utils";
 import arweaveGql from "arweave-graphql";
 import { arweave } from "./arweave";
 
@@ -73,15 +73,7 @@ export const setTrackInfo = async (gateway: string, txid: string) => {
     const tracklist = await Promise.all(
       data.map(async (res) => {
         // get owner account if exists
-        const owner = await accountFromAddress(res.owner.address).then(
-          (account) => {
-            if (account && account.profile.handleName) {
-              return account.profile.handleName;
-            } else {
-              return res.owner.address;
-            }
-          }
-        );
+        const owner = res.owner.address;
 
         // check for manifest
         if (res.type && res.type === "application/x.arweave-manifest+json") {

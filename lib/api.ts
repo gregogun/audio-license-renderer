@@ -18,6 +18,8 @@ export const getSong = async (gateway: string, txid: string) => {
       .filter((edge) => edge.node.tags.find((x) => x.name === "Title"))
       .map((edge) => setTrackInfo(edge.node as Transaction, gateway));
 
+    console.log(data);
+
     return data;
   } catch (error: any) {
     console.error(error);

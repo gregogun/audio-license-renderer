@@ -106,7 +106,23 @@ export const AudioPlayer = ({
   // preview progress
   const [progress, setProgress] = useState(0);
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
-  const { walletAddress } = useConnect();
+  const [connectedAddress, setConnectedAddress] = useState<string>();
+  // const { walletAddress } = useConnect();
+
+  useEffect(() => {
+    checkForAddress();
+  }, []);
+
+  const checkForAddress = async () => {
+    try {
+      const walletAddress = await window.arweaveWallet.getActiveAddress();
+      if (walletAddress) {
+        setConnectedAddress(walletAddress);
+      }
+    } catch (error) {
+      console.error("No wallet connected.");
+    }
+  };
 
   const currentTrack = tracklist[currentTrackIndex];
 
@@ -120,14 +136,33 @@ export const AudioPlayer = ({
     queryFn: () => getLicenseInfo(currentTrack.txid),
   });
 
-  const { data: licenseIsPaid, isLoading: licenseIsPaidLoading } = useQuery({
+  const {
+    data: licenseIsPaid,
+    isLoading: licenseIsPaidLoading,
+    status,
+  } = useQuery({
     queryKey: [`license-paid-${currentTrack.txid}`],
-    enabled: !!currentTrack.txid && !!walletAddress,
-    queryFn: () => licensePaid(currentTrack.txid, walletAddress),
+    enabled: !!currentTrack.txid && !!connectedAddress,
+    queryFn: () => {
+      if (!connectedAddress) {
+        return;
+      }
+
+      return licensePaid(currentTrack.txid, connectedAddress);
+    },
   });
+
+  useEffect(() => {
+    console.log("licensePaidStatus", status);
+  }, [status]);
 
   const handleShowPaymentDialog = () => setShowPaymentDialog(true);
   const handleCancelPaymentDialog = () => setShowPaymentDialog(false);
+
+  const hasLicense = licenseInfo && licenseInfo.hasLicense;
+
+  const showContent =
+    (hasLicense && licenseIsPaid && connectedAddress) || !hasLicense;
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -276,6 +311,7 @@ export const AudioPlayer = ({
         fee={licenseInfo?.accessFee}
         txid={currentTrack.txid}
         licensePaid={licenseIsPaid}
+        walletAddress={connectedAddress}
       />
 
       {!showPaymentDialog && (
@@ -309,7 +345,6 @@ export const AudioPlayer = ({
           size="3"
           data-playing={playing}
           aria-checked={playing}
-          // disabled={!ready}
           role="switch"
           onClick={handlePlayPause}
         >
@@ -317,7 +352,7 @@ export const AudioPlayer = ({
         </PlayPauseButton>
       )}
 
-      {licenseInfo?.hasLicense && !licenseIsPaid && !showPaymentDialog && (
+      {!showContent && !showPaymentDialog && (
         <Button
           onClick={handleShowPaymentDialog}
           css={{
@@ -339,80 +374,73 @@ export const AudioPlayer = ({
         </Button>
       )}
 
-      {licenseIsPaid ||
-        (!licenseInfo?.hasLicense &&
-          !licenseInfoLoading &&
-          !licenseIsPaidLoading && (
-            <>
-              <Flex css={{ mt: "-$2" }} direction="column">
-                <Typography css={{ color: "$whiteA12" }} weight="6">
-                  {currentTrack.title ? currentTrack.title : "(Untitled)"}
-                </Typography>
-                <Typography size="2">
-                  {abbreviateAddress({
-                    address: currentTrack.creator,
-                    options: { endChars: 5, noOfEllipsis: 3 },
-                  })}
-                </Typography>
-              </Flex>
+      {showContent && !licenseIsPaidLoading && (
+        <>
+          <Flex css={{ mt: "-$2" }} direction="column">
+            <Typography css={{ color: "$whiteA12" }} weight="6">
+              {currentTrack.title ? currentTrack.title : "(Untitled)"}
+            </Typography>
+            <Typography size="2">
+              {abbreviateAddress({
+                address: currentTrack.creator,
+                options: { endChars: 5, noOfEllipsis: 3 },
+              })}
+            </Typography>
+          </Flex>
 
-              <Flex
-                css={{
-                  position: "relative",
-                }}
-                direction="column"
+          <Flex
+            css={{
+              position: "relative",
+            }}
+            direction="column"
+          >
+            <ProgressContainer>
+              <ProgressSlider
+                onKeyDown={handleKeyDown}
+                defaultValue={[
+                  audioCtxRef.current ? audioCtxRef.current.currentTime : 0,
+                ]}
+                value={scrubbing ? [scrubbedValue as number] : [currentTime]}
+                max={duration}
+                step={progressStep}
+                aria-label="Track Progress"
+                onValueChange={(e) => handleProgressChange(e)}
+                onValueCommit={handleProgressCommit}
               >
-                <ProgressContainer>
-                  <ProgressSlider
-                    onKeyDown={handleKeyDown}
-                    defaultValue={[
-                      audioCtxRef.current ? audioCtxRef.current.currentTime : 0,
-                    ]}
-                    value={
-                      scrubbing ? [scrubbedValue as number] : [currentTime]
-                    }
-                    max={duration}
-                    step={progressStep}
-                    aria-label="Track Progress"
-                    onValueChange={(e) => handleProgressChange(e)}
-                    onValueCommit={handleProgressCommit}
-                  >
-                    <SliderTrack>
-                      <SliderRange />
-                    </SliderTrack>
-                    <SliderThumb data-slider-thumb />
-                  </ProgressSlider>
-                </ProgressContainer>
-                <Flex
-                  css={{
-                    position: "absolute",
-                    top: "$5",
-                    width: "100%",
-                  }}
-                  justify="between"
-                >
-                  <Typography size="1">
-                    {scrubbing
-                      ? formatTime(scrubbedValue as number)
-                      : formatTime(currentTime)}
-                  </Typography>
-                  <Typography size="1">
-                    {duration && !isNaN(duration)
-                      ? formatTime(duration)
-                      : `0:00`}
-                  </Typography>
-                </Flex>
-              </Flex>
+                <SliderTrack>
+                  <SliderRange />
+                </SliderTrack>
+                <SliderThumb data-slider-thumb />
+              </ProgressSlider>
+            </ProgressContainer>
+            <Flex
+              css={{
+                position: "absolute",
+                top: "$5",
+                width: "100%",
+              }}
+              justify="between"
+            >
+              <Typography size="1">
+                {scrubbing
+                  ? formatTime(scrubbedValue as number)
+                  : formatTime(currentTime)}
+              </Typography>
+              <Typography size="1">
+                {duration && !isNaN(duration) ? formatTime(duration) : `0:00`}
+              </Typography>
+            </Flex>
+          </Flex>
 
-              <ControlsContainer
-                css={{
-                  mx: "auto",
-                  my: "$3",
-                }}
-                align="center"
-                gap="3"
-              >
-                {/* <SkipButton
+          <ControlsContainer
+            css={{
+              mx: "auto",
+              my: "$3",
+            }}
+            align="center"
+            gap="3"
+          >
+            {/* <SkipButton
           onClick={handlePrevTrack}
           css={{
             svg: {
@@ -424,7 +452,7 @@ export const AudioPlayer = ({
         >
           <MdSkipPrevious />
         </SkipButton> */}
-                {/* <SkipButton
+            {/* <SkipButton
           onClick={handleNextTrack}
           css={{
             svg: {
@@ -436,53 +464,51 @@ export const AudioPlayer = ({
         >
           <MdSkipNext />
         </SkipButton> */}
-              </ControlsContainer>
+          </ControlsContainer>
 
-              <Flex
+          <Flex
+            css={{
+              "& svg": {
+                size: "$5",
+                color: "$whiteA12",
+              },
+            }}
+            align="center"
+            justify="between"
+            gap="3"
+          >
+            <IconButton>
+              <BsThreeDots />
+            </IconButton>
+            <Flex gap="3">
+              <MdVolumeDown />
+              <VolumeContainer
                 css={{
-                  "& svg": {
-                    size: "$5",
-                    color: "$whiteA12",
-                  },
+                  maxWidth: "$40",
+                  minWidth: "$30",
+                  flex: 1,
                 }}
-                align="center"
-                justify="between"
-                gap="3"
               >
-                <IconButton>
-                  <BsThreeDots />
-                </IconButton>
-                <Flex gap="3">
-                  <MdVolumeDown />
-                  <VolumeContainer
-                    css={{
-                      maxWidth: "$40",
-                      minWidth: "$30",
-                      flex: 1,
-                    }}
-                  >
-                    <VolumeSlider
-                      defaultValue={[
-                        gainRef.current
-                          ? gainRef.current.gain.value / 100
-                          : 100,
-                      ]}
-                      max={100}
-                      step={progressStep}
-                      aria-label="Volume"
-                      onValueChange={(e) => handleValueChange(e)}
-                      onKeyDown={handleKeyDown}
-                    >
-                      <SliderTrack>
-                        <SliderRange />
-                      </SliderTrack>
-                      <SliderThumb data-slider-thumb />
-                    </VolumeSlider>
-                  </VolumeContainer>
-                </Flex>
-              </Flex>
-            </>
-          ))}
+                <VolumeSlider
+                  defaultValue={[
+                    gainRef.current ? gainRef.current.gain.value / 100 : 100,
+                  ]}
+                  max={100}
+                  step={progressStep}
+                  aria-label="Volume"
+                  onValueChange={(e) => handleValueChange(e)}
+                  onKeyDown={handleKeyDown}
+                >
+                  <SliderTrack>
+                    <SliderRange />
+                  </SliderTrack>
+                  <SliderThumb data-slider-thumb />
+                </VolumeSlider>
+              </VolumeContainer>
+            </Flex>
+          </Flex>
+        </>
+      )}
     </AudioContainer>
   );
 };
