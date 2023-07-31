@@ -1,6 +1,3 @@
-import { getAccount } from "@/lib/arweave";
-import { ArAccount } from "arweave-account";
-
 export const boringAvatars = (txid?: string) =>
   `https://source.boringavatars.com/marble/100/${txid}?square=true?colors=264653,2a9d8f,e9c46a,f4a261,e76f51`;
 
@@ -17,18 +14,6 @@ export const formatTime = (time: number): string => {
 
   return `${minutes}:${formattedSeconds}`;
 };
-
-export const accountFromAddress = async (
-  address: string | undefined
-): Promise<ArAccount | undefined> => {
-  if (!address) {
-    return;
-  }
-  const userAccount = await getAccount(address);
-
-  return userAccount;
-};
-
 interface AbbreviateAddressOptions {
   startChars?: number;
   endChars?: number;

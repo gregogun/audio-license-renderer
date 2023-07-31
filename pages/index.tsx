@@ -3,14 +3,13 @@ import { AudioPlayer } from "@/modules/AudioPlayer/containers/AudioPlayer";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { Flex, Loader } from "@/ui";
+import { ConnectWallet } from "arweave-wallet-ui-test";
 
 export default function Home() {
   const [txid, setTxid] = useState<string>();
   const router = useRouter();
 
   useEffect(() => {
-    // console.log(router.query.tx);
-
     if (router.query.tx) {
       setTxid(router.query.tx as string);
     } else {

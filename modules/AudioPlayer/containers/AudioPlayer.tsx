@@ -21,6 +21,7 @@ export const AudioPlayer = ({
   /* FETCH TX & TRANSFORM DATA */
 
   useEffect(() => {
+    console.log("yoooo");
     fetchAndTransform();
   }, []);
 
@@ -47,29 +48,5 @@ export const AudioPlayer = ({
     return null;
   }
 
-  return (
-    <>
-      {/* <Flex
-        css={{
-          position: "absolute",
-          top: 40,
-        }}
-        direction="column"
-        align="center"
-        gap="10"
-      >
-        <ConnectWallet
-          appName="AR-1"
-          permissions={[
-            "ACCESS_ADDRESS",
-            "ACCESS_ALL_ADDRESSES",
-            "ACCESS_ARWEAVE_CONFIG",
-            "SIGN_TRANSACTION",
-            "DISPATCH",
-          ]}
-        />
-      </Flex> */}
-      <Component tracklist={tracklist} />
-    </>
-  );
+  return <Component tracklist={tracklist} />;
 };
